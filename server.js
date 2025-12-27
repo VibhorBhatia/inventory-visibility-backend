@@ -26,6 +26,30 @@ app.get("/inventory", (req, res) => {
   res.json(inventory);
 });
 
+// Stock IN
+app.post("/stock/in", (req, res) => {
+  const item = inventory.find(i => i.id === req.body.id);
+  if (!item) {
+    return res.status(404).json({ error: "Item not found" });
+  }
+
+  item.quantity += req.body.quantity;
+  item.lastMovedAt = new Date();
+  res.json(item);
+});
+
+// Stock OUT
+app.post("/stock/out", (req, res) => {
+  const item = inventory.find(i => i.id === req.body.id);
+  if (!item) {
+    return res.status(404).json({ error: "Item not found" });
+  }
+
+  item.quantity -= req.body.quantity;
+  item.lastMovedAt = new Date();
+  res.json(item);
+});
+
 app.listen(4000, () => {
   console.log("Backend running on port 4000");
 });
