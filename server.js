@@ -11,6 +11,26 @@ const DEAD_STOCK_DAYS = 60;
 const daysBetween = (date) =>
   Math.floor((Date.now() - new Date(date)) / (1000 * 60 * 60 * 24));
 
+app.get("/", (req, res) => {
+    res.json({
+      service: "Inventory Visibility Backend",
+      status: "running",
+      description: "API-only backend for inventory visibility and analytics",
+      availableEndpoints: [
+        "/inventory",
+        "/analytics/low-stock",
+        "/analytics/dead-stock",
+        "/health"
+      ],
+      note: "Use the above endpoints to validate backend functionality"
+    });
+  });
+  
+  // Health check route
+app.get("/health", (req, res) => {
+    res.json({ status: "OK" });
+  });
+
 // Create inventory item
 app.post("/inventory", (req, res) => {
   const product = {
