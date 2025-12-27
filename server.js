@@ -6,6 +6,10 @@ app.use(cors());
 app.use(express.json());
 
 let inventory = [];
+const DEAD_STOCK_DAYS = 60;
+
+const daysBetween = (date) =>
+  Math.floor((Date.now() - new Date(date)) / (1000 * 60 * 60 * 24));
 
 // Create inventory item
 app.post("/inventory", (req, res) => {
@@ -29,9 +33,7 @@ app.get("/inventory", (req, res) => {
 // Stock IN
 app.post("/stock/in", (req, res) => {
   const item = inventory.find(i => i.id === req.body.id);
-  if (!item) {
-    return res.status(404).json({ error: "Item not found" });
-  }
+  if (!item) return res.status(404).json({ error: "Item not found" });
 
   item.quantity += req.body.quantity;
   item.lastMovedAt = new Date();
@@ -41,13 +43,27 @@ app.post("/stock/in", (req, res) => {
 // Stock OUT
 app.post("/stock/out", (req, res) => {
   const item = inventory.find(i => i.id === req.body.id);
-  if (!item) {
-    return res.status(404).json({ error: "Item not found" });
-  }
+  if (!item) return res.status(404).json({ error: "Item not found" });
 
   item.quantity -= req.body.quantity;
   item.lastMovedAt = new Date();
   res.json(item);
+});
+
+// Dead stock analytics
+app.get("/analytics/dead-stock", (req, res) => {
+  const deadStock = inventory.filter(
+    item => daysBetween(item.lastMovedAt) > DEAD_STOCK_DAYS
+  );
+  res.json(deadStock);
+});
+
+// Low stock analytics
+app.get("/analytics/low-stock", (req, res) => {
+  const lowStock = inventory.filter(
+    item => item.quantity < item.minThreshold
+  );
+  res.json(lowStock);
 });
 
 app.listen(4000, () => {
